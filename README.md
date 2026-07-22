@@ -1,5 +1,6 @@
 ## EX. NO:2 IMPLEMENTATION OF PLAYFAIR CIPHER
-
+Done by: Ramya L
+reg no: 212225040330
  
 
 ## AIM:
@@ -36,8 +37,67 @@ STEP-5: Display the obtained cipher text.
 
 Program:
 
+```
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
+char m[5][5];
 
+int p(char c, int k) {
+    for(int i = 0; i < k; i++) if(m[i/5][i%5] == c) return 1;
+    return 0;
+}
 
+void gk(char *k) {
+    char t[26]; int n = 0;
+    for(int i = 0; k[i]; i++) {
+        char c = toupper(k[i]) == 'J' ? 'I' : toupper(k[i]);
+        if(isalpha(c) && !p(c, n)) t[n++] = c;
+    }
+    for(char c = 'A'; c <= 'Z'; c++) {
+        if(c == 'J') continue;
+        if(!p(c, n)) t[n++] = c;
+    }
+    for(int i = 0; i < 25; i++) m[i/5][i%5] = t[i];
+}
+
+void fp(char c, int *r, int *col) {
+    c = (c == 'J') ? 'I' : c;
+    for(int i = 0; i < 5; i++) for(int j = 0; j < 5; j++) if(m[i][j] == c) { *r = i; *col = j; }
+}
+
+void pt(char *in, char *out) {
+    char t[100]; int j = 0, k = 0;
+    for(int i = 0; in[i]; i++) if(isalpha(in[i])) t[j++] = toupper(in[i]);
+    char f[100];
+    for(int i = 0; i < j; i++) {
+        f[k++] = t[i];
+        if(t[i] == t[i+1]) f[k++] = 'X';
+    }
+    if(k % 2) f[k++] = 'X';
+    f[k] = 0; strcpy(out, f);
+}
+
+void enc(char *t) {
+    for(int i = 0; t[i]; i += 2) {
+        int r1, c1, r2, c2;
+        fp(t[i], &r1, &c1); fp(t[i+1], &r2, &c2);
+        if(r1 == r2) { t[i] = m[r1][(c1+1)%5]; t[i+1] = m[r2][(c2+1)%5]; }
+        else if(c1 == c2) { t[i] = m[(r1+1)%5][c1]; t[i+1] = m[(r2+1)%5][c2]; }
+        else { t[i] = m[r1][c2]; t[i+1] = m[r2][c1]; }
+    }
+}
+
+int main() {
+    char k[50], pt_text[100], out[100];
+    printf("Keyword: "); scanf("%s", k);
+    printf("Plaintext: "); scanf("%s", pt_text);
+    gk(k); pt(pt_text, out); enc(out);
+    printf("Cipher: %s\n", out);
+    return 0;
+}
+```
 
 Output:
+<img width="1582" height="702" alt="image" src="https://github.com/user-attachments/assets/cbf2bfe9-7a49-4c2c-b8da-fb74f84a01d1" />
