@@ -40,64 +40,61 @@ Program:
 ```
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+#define SIZE 5
+char key[SIZE][SIZE] = 
+{
+    {'M','O','N','A','R'}, {'C','H','Y','B','D'},
+    {'E','F','G','I','K'}, {'L','P','Q','S','T'},
+    {'U','V','W','X','Z'}
+};
 
-char m[5][5];
+void find(char ch, int *r, int *c) 
+{
+    for (int i = 0; i < SIZE*SIZE; i++)
+        if (key[i/SIZE][i%SIZE] == ch) { *r = i/SIZE; *c = i%SIZE; return; }
+}
 
-int p(char c, int k) {
-    for(int i = 0; i < k; i++) if(m[i/5][i%5] == c) return 1;
+void playfair(char *in, char *out, int enc) 
+{
+    int r1, c1, r2, c2, s = enc ? 1 : -1;
+    for (int i = 0; in[i]; i += 2) 
+    {
+        find(in[i], &r1, &c1); find(in[i+1], &r2, &c2);
+        if (r1 == r2)
+            out[i] = key[r1][(c1 + s + SIZE) % SIZE],
+            out[i+1] = key[r2][(c2 + s + SIZE) % SIZE];
+        else if (c1 == c2)
+            out[i] = key[(r1 + s + SIZE) % SIZE][c1],
+            out[i+1] = key[(r2 + s + SIZE) % SIZE][c2];
+        else
+            out[i] = key[r1][c2], out[i+1] = key[r2][c1];
+    }
+    out[strlen(in)] = '\0';
+}
+
+int main() 
+{
+    char encrypted[100] = {0}, decrypted[100] = {0};
+    char text[100] = {0};
+    printf("Enter text : ");
+    scanf("%99s", text);
+    int len = strlen(text);
+    if (len % 2 != 0) 
+    {
+        printf("Error: Please enter an even number of characters.\n");
+        return 1;
+    }
+
+    playfair(text, encrypted, 1);
+    printf("Encrypted: %s\n", encrypted);
+    
+    playfair(encrypted, decrypted, 0);
+    printf("Decrypted: %s\n", decrypted);
+
     return 0;
 }
 
-void gk(char *k) {
-    char t[26]; int n = 0;
-    for(int i = 0; k[i]; i++) {
-        char c = toupper(k[i]) == 'J' ? 'I' : toupper(k[i]);
-        if(isalpha(c) && !p(c, n)) t[n++] = c;
-    }
-    for(char c = 'A'; c <= 'Z'; c++) {
-        if(c == 'J') continue;
-        if(!p(c, n)) t[n++] = c;
-    }
-    for(int i = 0; i < 25; i++) m[i/5][i%5] = t[i];
-}
-
-void fp(char c, int *r, int *col) {
-    c = (c == 'J') ? 'I' : c;
-    for(int i = 0; i < 5; i++) for(int j = 0; j < 5; j++) if(m[i][j] == c) { *r = i; *col = j; }
-}
-
-void pt(char *in, char *out) {
-    char t[100]; int j = 0, k = 0;
-    for(int i = 0; in[i]; i++) if(isalpha(in[i])) t[j++] = toupper(in[i]);
-    char f[100];
-    for(int i = 0; i < j; i++) {
-        f[k++] = t[i];
-        if(t[i] == t[i+1]) f[k++] = 'X';
-    }
-    if(k % 2) f[k++] = 'X';
-    f[k] = 0; strcpy(out, f);
-}
-
-void enc(char *t) {
-    for(int i = 0; t[i]; i += 2) {
-        int r1, c1, r2, c2;
-        fp(t[i], &r1, &c1); fp(t[i+1], &r2, &c2);
-        if(r1 == r2) { t[i] = m[r1][(c1+1)%5]; t[i+1] = m[r2][(c2+1)%5]; }
-        else if(c1 == c2) { t[i] = m[(r1+1)%5][c1]; t[i+1] = m[(r2+1)%5][c2]; }
-        else { t[i] = m[r1][c2]; t[i+1] = m[r2][c1]; }
-    }
-}
-
-int main() {
-    char k[50], pt_text[100], out[100];
-    printf("Keyword: "); scanf("%s", k);
-    printf("Plaintext: "); scanf("%s", pt_text);
-    gk(k); pt(pt_text, out); enc(out);
-    printf("Cipher: %s\n", out);
-    return 0;
-}
 ```
+## output
+<img width="616" height="326" alt="image" src="https://github.com/user-attachments/assets/0a19335d-e1e2-4381-9795-1fa24a9b3672" />
 
-Output:
-<img width="1582" height="702" alt="image" src="https://github.com/user-attachments/assets/cbf2bfe9-7a49-4c2c-b8da-fb74f84a01d1" />
